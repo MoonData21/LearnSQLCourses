@@ -347,3 +347,124 @@ select name,
  from hiking_trip
  where mountain_id = mountain.id) AS count
  from mountain;
+ 
+ # How UNION works
+ # It combines results of two or more queries.
+SELECT *
+FROM cycling
+WHERE year between 2010 and 2014
+UNION
+SELECT *
+FROM skating
+WHERE year between 2010 and 2014;
+
+# Both tables must have the same number of columns so that the results can be merged into one table.
+# The respective columns must have the same kind of information: number or text.
+
+# By default, UNION removes duplicate rows. Luckily, we can change this. Just put UNION ALL instead of UNION
+SELECT country
+FROM cycling
+UNION ALL
+SELECT country
+FROM skating;
+
+# How INTERSECT works
+# Well, UNION gave you all the results from the first query PLUS the results from the second query. 
+# INTERSECT, on the other hand, only shows the rows which belong to BOTH tables.
+# Find names of each person who has medals both in cycling and in skating.
+/*
+SELECT person
+FROM cycling
+INTERSECT
+SELECT person
+FROM skating;
+*/
+# How EXCEPT works
+# It shows all the results from the first (left) table with the exception of those that also appeared in the second (right) table.
+# Find all the countries which have a medal in cycling but not in skating.
+/*
+select country from cycling
+except
+select country from skating;
+*/
+# MINUS instead of EXCEPT
+# Find all the years when there was at least one medal in skating but no medals in cycling. Use the keyword MINUS.
+/*
+select year from skating
+minus
+select year from cycling;
+*/
+
+# Main excercises
+# Task 1 – Selecting rows from one table
+# Select all columns from horoscopes for Pisces and Aquarius from the years 2010 to 2014.
+SELECT *
+FROM horoscope
+WHERE sign in ('Pisces', 'Aquarius') 
+AND year BETWEEN 2010 and 2014;
+
+# Task 2 – Selecting rows from multiple tables
+# Show all pets (show the columns name, type, year_born) whose name begins with an 'M' together with their owners (the columns name, year_born).
+SELECT
+p.name,
+p.type,
+p.year_born AS pet_year_born,
+o.name,
+o.year_born AS owner_year_born
+FROM pet p
+JOIN owner o
+ON p.owner_id = o.id
+WHERE p.name LIKE 'M%';
+
+# Task 3 – Aggregation and grouping
+# Show students' names (column person) together with
+# The number of essays they handed in (name the column number_of_essays).
+# their average number of points (name the column avg_points).
+# Show only those students whose average number of points is more than 80.
+
+select person, count(*) as number_of_essays, avg(points) as avg_points from essay
+group by person
+having avg_points > 80;
+
+# Task 4 – Sophisticated JOINs
+# Show all coaches together with the players they train, show all columns for coaches and players. Show unemployed coaches with NULLs instead of player data.
+select * from coach
+left join player 
+on player.id = coach.player_id;
+
+# Task 5 – Subqueries
+# Show all columns for the prisons where there is at least one prisoner above 50 years of age.
+SELECT *
+FROM prison
+WHERE EXISTS (
+  SELECT
+    *
+  FROM prisoner
+  WHERE prison.id = prisoner.prison_id
+    AND age > 50
+);
+# Task 6 – Set operations
+# Show all columns for the products which are gluten free and vegetarian at the same time.
+/*
+SELECT *
+FROM vegetarian_product
+INTERSECT
+SELECT *
+FROM gluten_free_product;
+*/
+
+# Task 7 – Challenge
+/*
+The owner of the shop would like to see each customer's
+id (name the column cus_id).
+name (name the column cus_name).
+id of their latest purchase (name the column latest_purchase_id).
+the total quantity of all flowers purchased by the customer, in all purchases, not just the last purchase (name the column all_items_purchased).
+*/
+SELECT C.id AS cus_id, C.name AS cus_name, MAX(P.id) AS latest_purchase_id, SUM(I.quantity) AS all_items_purchased
+FROM customer C
+INNER JOIN purchase P
+ON P.customer_id = C.id
+INNER JOIN purchase_item I
+ON I.purchase_id = P.id
+GROUP BY cus_id
