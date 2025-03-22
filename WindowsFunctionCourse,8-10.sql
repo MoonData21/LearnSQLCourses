@@ -634,7 +634,7 @@ WITH cte AS (
     last_name,
     COUNT(*) c,
     RANK() OVER(PARTITION BY name ORDER BY COUNT(*) DESC) AS ranking
-  FROM procedur1 p 
+  FROM procedure1 p 
   JOIN doctor d
     ON p.doctor_id = d.id
   WHERE score >= (SELECT avg(score) FROM procedure1 pl WHERE pl.name = p.name)
